@@ -249,8 +249,8 @@ namespace Aurora
 				if (g_p4wininstalled && !Singleton<Config>.Instance.preferVisualClient)
 					return AsyncProcess.Schedule(output, "p4win.exe", GetUserInfoStringFull(true, dirname) + " -H \"" + filename + "\"", dirname, new AsyncProcess.OnDone(UnlockOp), token, 0);
 				if(g_p4vinstalled)
-					return AsyncProcess.Schedule(output, "p4v.exe", " -win 0 " + GetUserInfoStringFull(true, dirname) + " -cmd \"history " + filename + "\"", dirname, new AsyncProcess.OnDone(UnlockOp), token, 0);
-				return NotifyUser("could not find p4win.exe/p4v.exe installed in perforce directory");
+					return AsyncProcess.Schedule(output, "p4vc.exe", " " + GetUserInfoStringFull(true, dirname) + " history " + filename + " ", dirname, new AsyncProcess.OnDone(UnlockOp), token, 0);
+				return NotifyUser("could not find p4win.exe/p4vc.exe installed in perforce directory");
 			}
 
 			public static bool P4WinShowFile(OutputWindowPane output, string filename)
@@ -263,10 +263,10 @@ namespace Aurora
 				}
 				if (g_p4vinstalled)
 				{
-					return AsyncProcess.Schedule(output, "p4v.exe", " -win 0 " + GetUserInfoStringFull(true, Path.GetDirectoryName(filename)) + " -cmd \"open " + filename + "\"", Path.GetDirectoryName(filename), null, null, 0);
+					return AsyncProcess.Schedule(output, "p4vc.exe", " " + GetUserInfoStringFull(true, Path.GetDirectoryName(filename)) + " properties \"" + filename + "\"", Path.GetDirectoryName(filename), null, null, 0);
 				}
 				
-				return NotifyUser("could not find p4win.exe or p4v.exe installed in perforce directory");
+				return NotifyUser("could not find p4win.exe or p4vc.exe installed in perforce directory");
 			}
 
 			private static string GetUserInfoString()
@@ -325,32 +325,29 @@ namespace Aurora
 			public static bool TimeLapseView(OutputWindowPane output, string dirname, string filename)
 			{
 				if(!g_p4vinstalled)
-					return NotifyUser("could not find p4v exe installed in perforce directory");
-				// NOTE: The timelapse view uses the undocumented feature for bringing up the timelapse view. The username, client and port needs to be given in a certain order to work (straight from perforce).
-				string arguments = " -win 0 ";
-				arguments += GetUserInfoStringFull(true, dirname);
-				arguments += " -cmd \"annotate -i " + filename + "\"";
+					return NotifyUser("could not find p4vc exe installed in perforce directory");
+	    		string arguments = GetUserInfoStringFull(true, dirname);
+				arguments += " timelapseview \"" + filename + "\"";
 
 
 				string token = FormatToken("timelapse", filename);
 				if (!LockOp(token))
 					return false;
-				return AsyncProcess.Schedule(output, "p4v.exe", arguments, dirname, new AsyncProcess.OnDone(UnlockOp), token, 0);
+				return AsyncProcess.Schedule(output, "p4vc.exe", arguments, dirname, new AsyncProcess.OnDone(UnlockOp), token, 0);
 			}
 
 			public static bool RevisionGraph(OutputWindowPane output, string dirname, string filename)
 			{
 				if (!g_p4vinstalled)
-					return NotifyUser("could not find p4v exe installed in perforce directory");
+					return NotifyUser("could not find p4vc exe installed in perforce directory");
 				// NOTE: The timelapse view uses the undocumented feature for bringing up the timelapse view. The username, client and port needs to be given in a certain order to work (straight from perforce).
-				string arguments = " -win 0 ";
-				arguments += GetUserInfoStringFull(true, dirname);
-				arguments += " -cmd \"tree -i " + filename + "\"";
+				string arguments = GetUserInfoStringFull(true, dirname);
+				arguments += " revisiongraph \"" + filename + "\"";
 
 				string token = FormatToken("revisiongraph", filename);
 				if (!LockOp(token))
 					return false;
-				return AsyncProcess.Schedule(output, "p4v.exe", arguments, dirname, new AsyncProcess.OnDone(UnlockOp), token, 0);
+				return AsyncProcess.Schedule(output, "p4vc.exe", arguments, dirname, new AsyncProcess.OnDone(UnlockOp), token, 0);
 			}
 
 			static public string ResolveFileNameWithCase(string fullpath)
@@ -437,10 +434,10 @@ namespace Aurora
 						g_p4wininstalled = true;
 						Log.Info("Found p4win.exe");
 					}
-					if(System.IO.File.Exists(Path.Combine(installRoot, "p4v.exe")))
+					if(System.IO.File.Exists(Path.Combine(installRoot, "p4vc.exe")))
 					{
 						g_p4vinstalled = true;
-						Log.Info("Found p4v.exe");
+						Log.Info("Found p4vc.exe");
 					}
 
 					p4diff = GetRegistryValue("SOFTWARE\\Perforce\\Environment", "P4DIFF", true);
@@ -471,10 +468,10 @@ namespace Aurora
 						Log.Info("Found p4win in path");
 					}
 
-					if(null != Help.FindFileInPath("p4v.exe"))
+					if(null != Help.FindFileInPath("p4vs.exe"))
 					{
 						g_p4vinstalled = true;
-						Log.Info("Found p4v in path");
+						Log.Info("Found p4vs in path");
 					}
 
 					Log.Warning("Could not find any peforce installation in the registry!!!");

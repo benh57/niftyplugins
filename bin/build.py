@@ -11,7 +11,7 @@ import shutil
 QUIET = 0
 DEVENV = ''
 
-if 'VS140COMNTOOLS' in os.environ.keys():
+if 'VS150COMNTOOLS' in os.environ.keys():
 	DEVENV = os.path.abspath(os.path.join(os.environ['VS140COMNTOOLS'], '..', 'IDE', 'devenv.com'))
 else:
 	print "No visual studio found!"
